@@ -1,7 +1,7 @@
 ---
 tscached:
     redis:
-        host: "localhost"
+        host: "localhosta"
         port: 6379
         default_expire: 10800  # 3 hours
 
