@@ -1,13 +1,14 @@
 ---
 tscached:
     redis:
-        host: "localhosta"
-        port: 6379
+        ipaddrs: "127.0.0.1:27002,127.0.0.1:27003"
         default_expire: 10800  # 3 hours
-
+        password: "123456"
+        socket_timeout: 0.1
+        master_name: mymaster
     kairosdb:
-        host: "localhost"
-        port: 8080
+        kairosdb_host: "localhost"
+        kairosdb_port: 8080
 
     webapp:
         host: "0.0.0.0"

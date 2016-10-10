@@ -7,7 +7,7 @@ import simplejson as json
 
 from tscached import app
 from tscached.utils import create_key
-
+from tscached.redisclient import getRedisClient
 
 """
     NOTE: and TODO(?) The big logging block present in handler_general is missing here.
@@ -29,7 +29,7 @@ def metadata_caching(config, name, endpoint, post_data=None):
     else:
         redis_key = 'tscached:' + name
 
-    redis_client = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'])
+    redis_client = getRedisClient()
     try:
         get_result = redis_client.get(redis_key)
     except redis.exceptions.RedisError as e:
@@ -41,7 +41,7 @@ def metadata_caching(config, name, endpoint, post_data=None):
         return get_result, 200
     else:
         logging.info('Meta Endpoint MISS: %s' % redis_key)
-        url = 'http://%s:%s%s' % (config['kairosdb']['host'], config['kairosdb']['port'], endpoint)
+        url = 'http://%s:%s%s' % (config['kairosdb']['kairosdb_host'], config['kairosdb']['kairosdb_port'], endpoint)
 
         try:
             if post_data:

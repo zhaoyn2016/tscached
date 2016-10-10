@@ -10,6 +10,6 @@ ADD . /
 RUN pip install -Ur requirements.txt
 RUN make frontend
 
-CMD uwsgi --ini tscached.uwsgi.ini --wsgi-file tscached/uwsgi.py
+CMD run-tscached.sh
 
 EXPOSE 8008

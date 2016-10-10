@@ -5,8 +5,6 @@ import math
 
 import requests
 import simplejson as json
-
-
 # note: this doesn't work perfectly for months (31 days) or years (365 days)
 SECONDS_IN_UNIT = {
                    'milliseconds': 0.001,
@@ -161,7 +159,6 @@ def get_chunked_time_ranges(config, time_range):
             chunks.append((start, end_time))
             end_time -= length_td
         return chunks
-
 
 def get_range_needed(start_request,
                      end_request,

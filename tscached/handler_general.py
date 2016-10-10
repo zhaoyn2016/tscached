@@ -12,6 +12,7 @@ from tscached.kquery import KQuery
 from tscached.shadow import process_for_readahead
 from tscached.utils import BackendQueryFailure
 from tscached.utils import populate_time_range
+from tscached.redisclient import getRedisClient
 
 
 @app.route('/', methods=['GET'])
@@ -38,7 +39,7 @@ def handle_query():
     config = app.config['tscached']
 
     logging.info('Query')
-    redis_client = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'])
+    redis_client = getRedisClient()
     kairos_time_range = populate_time_range(payload)
     ret_data = {'queries': []}
     overall_cache_mode = None

@@ -7,7 +7,7 @@ import simplejson as json
 from tscached import VERSION
 from tscached import app
 from tscached import shadow
-
+from tscached.redisclient import getRedisClient
 
 @app.route('/api/maintenance/flushall', methods=['GET'])
 def handle_flushall():
@@ -17,7 +17,7 @@ def handle_flushall():
         :return: 200 response, dict with key 'message' describing success/failure/cowardice.
     """
     config = app.config['tscached']
-    redis_client = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'])
+    redis_client = getRedisClient()
     orly = request.args.get('orly')
 
     if orly == 'yarly':
@@ -25,7 +25,7 @@ def handle_flushall():
         lock = shadow.become_leader(config, redis_client)
         if lock:
             logging.info('Flushall acquired shadow lock')
-            redis_client = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'])
+            redis_client = getRedisClient()
             ret = redis_client.flushall()
             message = 'Redis FLUSHALL executed; received response: %s' % ret
         else:

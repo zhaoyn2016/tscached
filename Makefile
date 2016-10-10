@@ -53,8 +53,8 @@ frontend:
 	cp logo/logo.png tscached/kairos-web/img/logo.png
 	cp logo/logo.png tscached/kairos-web/img/logoSmall.png
 
-# build me a deb
-package: frontend
+# build me a eb
+package: frodntend
 	dpkg-buildpackage -us -uc
 
 # changelog stuff

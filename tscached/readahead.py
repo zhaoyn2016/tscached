@@ -7,7 +7,7 @@ import redis
 import yaml
 
 from tscached.shadow import perform_readahead
-
+from tscached.redisclient import getRedisClient
 
 def start():
     parser = argparse.ArgumentParser(description='Harness for querying/testing tscached/kairosdb')
@@ -19,7 +19,7 @@ def start():
     with open(args.config, 'r') as config_file:
         config = yaml.load(config_file.read())['tscached']
 
-    redis_client = redis.StrictRedis(host=config['redis']['host'], port=config['redis']['port'])
+    redis_client = getRedisClient()
     perform_readahead(config, redis_client)
 
 

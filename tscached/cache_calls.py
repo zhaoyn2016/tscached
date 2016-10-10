@@ -61,7 +61,7 @@ def cold(config, redis_client, kquery, kairos_time_range):
         :return: dict, with keys sample_size (int) and results (list of dicts).
     """
     chunked_ranges = get_chunked_time_ranges(config, kairos_time_range)
-    results = kquery.proxy_to_kairos_chunked(config['kairosdb']['host'], config['kairosdb']['port'],
+    results = kquery.proxy_to_kairos_chunked(config['kairosdb']['kairosdb_host'], config['kairosdb']['kairosdb_port'],
                                              chunked_ranges)
     logging.info('KQuery is COLD - using %d chunks' % len(results))
 
@@ -148,7 +148,7 @@ def warm(config, redis_client, kquery, kairos_time_range, range_needed):
                     'end_absolute': int(range_needed[1].strftime('%s')) * 1000,
                 }
 
-    new_kairos_result = kquery.proxy_to_kairos(config['kairosdb']['host'], config['kairosdb']['port'],
+    new_kairos_result = kquery.proxy_to_kairos(config['kairosdb']['kairosdb_host'], config['kairosdb']['kairosdb_port'],
                                                time_dict)
 
     response_kquery = {'results': [], 'sample_size': 0}
