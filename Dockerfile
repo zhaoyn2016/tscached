@@ -7,9 +7,10 @@ RUN apt-get install -y python2.7 python2.7-dev python-pip
 RUN apt-get install -y libyaml-dev libpcre3-dev
 
 ADD . /
+RUN chmod +x run-tscached.sh
 RUN pip install -Ur requirements.txt
 RUN make frontend
 
-CMD run-tscached.sh
+CMD ./run-tscached.sh
 
 EXPOSE 8008
