@@ -96,7 +96,11 @@ def cold(config, redis_client, kquery, kairos_time_range):
     # Handle a fully empty set of MTS. Bail out before we upsert.
     if len(mts_lookup) == 0:
         kquery.query['values'] = []
-        response_kquery['results'].append(kquery.query)
+        s = {}
+        s['name'] = kquery.query['name']
+        s['tags'] = {}
+        s['values'] = []
+        response_kquery['results'].append(s)
         logging.info('Received probable incorrect query; no results. Not caching!')
         return response_kquery
 
@@ -126,7 +130,11 @@ def hot(redis_client, kquery, kairos_time_range):
     # Handle a fully empty set of MTS: hand back the expected query with no values.
     if len(response_kquery['results']) == 0:
         kquery.query['values'] = []
-        response_kquery['results'].append(kquery.query)
+        s={}
+        s['name']=kquery.query['name']
+        s['tags']={}
+        s['values']=[]
+        response_kquery['results'].append(s)
     return response_kquery
 
 

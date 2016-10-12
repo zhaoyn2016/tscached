@@ -40,7 +40,7 @@ def setup_logging():
 
 def get_timedelta(value):
     """ input has keys value, unit. common inputs noted start_relative, end_relative """
-    seconds = int(value['value']) * SECONDS_IN_UNIT[value['unit']]
+    seconds = int(value['value']) * SECONDS_IN_UNIT[value['unit'].lower()]
     return datetime.timedelta(seconds=seconds)
 
 
