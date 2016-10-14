@@ -11,8 +11,8 @@ class MTS(DataCache):
     def __init__(self, redis_client):
         super(MTS, self).__init__(redis_client, 'mts')
         self.result = None
-        self.query_mask = {}
 
+        self.query_mask = {}
         # TODO make these configurable
         self.gc_expiry = 12600  # three and a half hours
         self.expiry = 10800  # three hours

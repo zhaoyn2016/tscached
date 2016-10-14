@@ -43,7 +43,6 @@ def handle_query():
     kairos_time_range = populate_time_range(payload)
     ret_data = {'queries': []}
     overall_cache_mode = None
-
     # HTTP request may contain one or more kqueries
     for kquery in KQuery.from_request(payload, redis_client):
         try:
@@ -73,5 +72,4 @@ def handle_query():
             overall_cache_mode = cache_mode
         elif cache_mode != overall_cache_mode:
             overall_cache_mode = 'mixed'
-
     return json.dumps(ret_data), 200, {'Content-Type': 'application/json', 'X-tscached-mode': overall_cache_mode}

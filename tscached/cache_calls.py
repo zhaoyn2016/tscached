@@ -88,6 +88,8 @@ def cold(config, redis_client, kquery, kairos_time_range):
     response_kquery = {'results': [], 'sample_size': 0}
     pipeline = redis_client.pipeline()
     for mts in mts_lookup.values():
+        if len(mts.result['values']) == 0:
+            continue
         kquery.add_mts(mts)
         pipeline.set(mts.get_key(), json.dumps(mts.result), ex=mts.expiry)
         logging.debug('Cold: Writing %d points to MTS: %s' % (len(mts.result['values']), mts.get_key()))
@@ -168,19 +170,22 @@ def warm(config, redis_client, kquery, kairos_time_range, range_needed):
     cached_mts = {}  # redis key to MTS
     # pull in cached MTS, put them in a lookup table
     # TODO expected_resolution should be passed in
+
     for mts in MTS.from_cache(kquery.cached_data.get('mts_keys', []), redis_client):
         kquery.add_mts(mts)  # we want to write these back eventually
         cached_mts[mts.get_key()] = mts
 
     # loop over newly returned MTS. if they already existed, merge/write. if not, just write.
     pipeline = redis_client.pipeline()
+    sign=False
     for mts in MTS.from_result(new_kairos_result['queries'][0], redis_client, kquery):
         old_mts = cached_mts.get(mts.get_key())
-
         if not old_mts:  # This MTS just started reporting and isn't yet in the cache (cold behavior).
-            kquery.add_mts(mts)
-            pipeline.set(mts.get_key(), json.dumps(mts.result), ex=mts.expiry)
-            response_kquery = mts.build_response(kairos_time_range, response_kquery, trim=False)
+            if len(mts.result['values'])>0:
+                sign=True
+                kquery.add_mts(mts)
+                pipeline.set(mts.get_key(), json.dumps(mts.result), ex=mts.expiry)
+                response_kquery = mts.build_response(kairos_time_range, response_kquery, trim=False)
         else:
             if range_needed[2] == FETCH_AFTER:
                 end_times.append(range_needed[1])
@@ -197,9 +202,12 @@ def warm(config, redis_client, kquery, kairos_time_range, range_needed):
             else:
                 logging.error("WARM is not equipped for this range_needed attrib: %s" % range_needed[2])
                 return response_kquery
-
-            pipeline.set(old_mts.get_key(), json.dumps(old_mts.result), ex=old_mts.expiry)
+            sign=True
+            pipeline.set(old_mts.get_key(), json.dumps(old_mts.result), ex=old_mts.expiry) 
             response_kquery = old_mts.build_response(kairos_time_range, response_kquery)
+    if not sign:
+        for mts in cached_mts.itervalues():
+            response_kquery = mts.build_response(kairos_time_range, response_kquery)
     try:
         result = pipeline.execute()
         success_count = len(filter(lambda x: x is True, result))
