@@ -11,7 +11,6 @@ class MTS(DataCache):
     def __init__(self, redis_client):
         super(MTS, self).__init__(redis_client, 'mts')
         self.result = None
-
         self.query_mask = {}
         # TODO make these configurable
         self.gc_expiry = 12600  # three and a half hours
@@ -45,7 +44,8 @@ class MTS(DataCache):
     def key_basis(self):
         mts_key_dict = {}
         mts_key_dict['tags'] = self.query_mask.get('tags', {})
-
+        if len(self.query_mask.get('aggregators',[]))>0:
+            mts_key_dict['sampling']=self.query_mask.get('aggregators',[])[0].get("sampling")
         if self.result.get('group_by'):
             mts_key_dict['group_by'] = self.result['group_by']
         if self.result.get('aggregators'):

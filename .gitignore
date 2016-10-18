@@ -16,3 +16,4 @@ debian/tscached/
 debian/*.log
 debian/*.debhelper
 debian/files
+.idea/*

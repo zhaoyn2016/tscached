@@ -1,4 +1,4 @@
-IMAGE=k/tscached
+IMAGE=ts/tscached
 
 docker rmi -f $IMAGE
 chmod +x run-kairosdb.sh
