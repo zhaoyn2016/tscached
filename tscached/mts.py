@@ -4,7 +4,7 @@ import logging
 
 from datacache import DataCache
 from utils import get_needed_absolute_time_range
-
+from utils import getExpiry
 
 class MTS(DataCache):
 
@@ -14,7 +14,7 @@ class MTS(DataCache):
         self.query_mask = {}
         # TODO make these configurable
         self.gc_expiry = 12600  # three and a half hours
-        self.expiry = 10800  # three hours
+        self.expiry = 10800
         self.acceptable_skew = 6
         self.expected_resolution = 10000  # in ms
 
@@ -25,6 +25,7 @@ class MTS(DataCache):
             new = cls(redis_client)
             new.result = result
             new.query_mask = kquery.query
+            new.expiry=getExpiry(kquery.query)
             yield new
 
     @classmethod
@@ -33,7 +34,6 @@ class MTS(DataCache):
         for key in redis_keys:
             pipeline.get(key)
         results = pipeline.execute()
-
         for ctr in xrange(len(redis_keys)):
             new = cls(redis_client)
             new.redis_key = redis_keys[ctr]  # this must not be recalculated, due to masking

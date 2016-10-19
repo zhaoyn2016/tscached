@@ -5,7 +5,7 @@ import redis
 import simplejson as json
 
 from tscached.mts import MTS
-from tscached.utils import BackendQueryFailure
+from tscached.redisclient import BackendQueryFailure
 from tscached.utils import FETCH_AFTER
 from tscached.utils import FETCH_ALL
 from tscached.utils import FETCH_BEFORE
@@ -50,6 +50,24 @@ def process_cache_hit(config, redis_client, kquery, kairos_time_range):
             return warm(config, redis_client, kquery, kairos_time_range, range_needed), mode
         else:
             raise BackendQueryFailure("Received unsupported range_needed value: %s" % range_needed[2])
+
+
+def hot(redis_client, kquery, kairos_time_range):
+    """ Hot / Hit """
+    logging.info("KQuery is HOT")
+    response_kquery = {'results': [], 'sample_size': 0}
+    for mts in MTS.from_cache(kquery.cached_data.get('mts_keys', []), redis_client):
+        response_kquery = mts.build_response(kairos_time_range, response_kquery)
+
+    # Handle a fully empty set of MTS: hand back the expected query with no values.
+    if len(response_kquery['results']) == 0:
+        kquery.query['values'] = []
+        s={}
+        s['name']=kquery.query['name']
+        s['tags']={}
+        s['values']=[]
+        response_kquery['results'].append(s)
+    return response_kquery
 
 
 def cold(config, redis_client, kquery, kairos_time_range):
@@ -122,24 +140,6 @@ def cold(config, redis_client, kquery, kairos_time_range):
     return response_kquery
 
 
-def hot(redis_client, kquery, kairos_time_range):
-    """ Hot / Hit """
-    logging.info("KQuery is HOT")
-    response_kquery = {'results': [], 'sample_size': 0}
-    for mts in MTS.from_cache(kquery.cached_data.get('mts_keys', []), redis_client):
-        response_kquery = mts.build_response(kairos_time_range, response_kquery)
-
-    # Handle a fully empty set of MTS: hand back the expected query with no values.
-    if len(response_kquery['results']) == 0:
-        kquery.query['values'] = []
-        s={}
-        s['name']=kquery.query['name']
-        s['tags']={}
-        s['values']=[]
-        response_kquery['results'].append(s)
-    return response_kquery
-
-
 def warm(config, redis_client, kquery, kairos_time_range, range_needed):
     """ Warm / Stale
         config: nested dict loaded from the 'tscached' section of a yaml file.
@@ -203,7 +203,8 @@ def warm(config, redis_client, kquery, kairos_time_range, range_needed):
                 logging.error("WARM is not equipped for this range_needed attrib: %s" % range_needed[2])
                 return response_kquery
             sign=True
-            pipeline.set(old_mts.get_key(), json.dumps(old_mts.result), ex=old_mts.expiry) 
+            if len(old_mts.result['values'])>0:
+                pipeline.set(old_mts.get_key(), json.dumps(old_mts.result), ex=old_mts.expiry)
             response_kquery = old_mts.build_response(kairos_time_range, response_kquery)
     if not sign:
         for mts in cached_mts.itervalues():

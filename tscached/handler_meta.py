@@ -15,7 +15,7 @@ from tscached.redisclient import getRedisClient
     tscached/__init__.py *after* handler_general. This seems janky and should be remediated.
 """
 
-
+config = app.config['tscached']
 def metadata_caching(config, name, endpoint, post_data=None):
     """ Encapsulate stupid-simple cache logic for Kairos "metadata" endpoints.
         config: nested dict loaded from the 'tscached' section of a yaml file.
@@ -45,9 +45,9 @@ def metadata_caching(config, name, endpoint, post_data=None):
 
         try:
             if post_data:
-                kairos_result = requests.post(url, data=post_data)
+                kairos_result = requests.post(url, data=post_data,timeout=config['kairosdb']['kairosdb_timeout'])
             else:
-                kairos_result = requests.get(url)
+                kairos_result = requests.get(url,timeout=config['kairosdb']['kairosdb_timeout'])
 
         except requests.exceptions.RequestException as e:
             logging.error('BackendQueryFailure: %s' % e.message)

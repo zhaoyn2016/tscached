@@ -4,14 +4,12 @@ import logging
 import threading
 
 from datacache import DataCache
-from utils import BackendQueryFailure
-from utils import get_timedelta
-from utils import query_kairos
-
-
+from redisclient import BackendQueryFailure
+from utils import get_windowsize
+from redisclient import query_kairos
+from utils import getExpiry
 class KQuery(DataCache):
-
-    expiry = 10800  # three hours, matching Kairos
+    expiry=10800
     query = None
     related_mts = None
     window_size = False  # or datetime.timedelta of largest aggregator
@@ -26,7 +24,7 @@ class KQuery(DataCache):
         for metric in request.get('metrics', []):
             new = cls(redis_client)
             new.query = metric
-
+            new.expiry=getExpiry(metric)
             # This seemingly terrifying kludge makes it easy to merge chunks of MTS together.
             # For all aggregators, we remove align_sampling and add align_start_time.
             # Otherwise, partial windows (if aggregated) will appear on every seam in the data. Info:
@@ -35,7 +33,7 @@ class KQuery(DataCache):
                 # Derive a maximum window size so we can merge more intelligently later.
                 sampling = new.query['aggregators'][agg_ndx].get('sampling')
                 if sampling:
-                    window_size = get_timedelta(sampling)
+                    window_size = get_windowsize(sampling)
                     if not new.window_size:
                         new.window_size = window_size
                     elif window_size > new.window_size:

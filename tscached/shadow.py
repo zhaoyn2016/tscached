@@ -3,7 +3,7 @@ import socket
 
 from tscached import cache_calls
 from tscached import kquery
-from tscached.utils import BackendQueryFailure
+from tscached.redisclient import BackendQueryFailure
 
 import redis
 import redlock
@@ -14,7 +14,7 @@ SHADOW_SERVER_KEY = 'tscached:shadow_server'
 SHADOW_LIST = 'tscached:shadow_list'
 
 
-def should_add_to_readahead(config, referrer, headers):
+def  should_add_to_readahead(config, referrer, headers):
     """ Should we add this KQuery for readahead behavior?
         :param config: dict representing the top-level tscached config
         :param referrer: None or str, from the http request

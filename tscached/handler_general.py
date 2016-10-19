@@ -10,7 +10,7 @@ from tscached.cache_calls import cold
 from tscached.cache_calls import process_cache_hit
 from tscached.kquery import KQuery
 from tscached.shadow import process_for_readahead
-from tscached.utils import BackendQueryFailure
+from tscached.redisclient import BackendQueryFailure
 from tscached.utils import populate_time_range
 from tscached.redisclient import getRedisClient
 
