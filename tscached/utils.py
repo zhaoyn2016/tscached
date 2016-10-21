@@ -28,7 +28,7 @@ FETCH_ALL = 'overwrite'
 def setup_logging():
     logger = logging.getLogger()
     handler = logging.StreamHandler()
-    if ~os.path.exists('/logs'):
+    if  not os.path.exists('/logs'):
         os.mkdir("/logs")
     LOG_FILE='/logs/tscached.log'
     handler1=logging.handlers.RotatingFileHandler(LOG_FILE, maxBytes = 20*1024*1024, backupCount = 2)
